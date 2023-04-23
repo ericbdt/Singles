@@ -117,12 +117,133 @@ end
 """
 Heuristically solve an instance
 """
+function noircir(i,j, M, cases_vides) #attention faut mettre le type des variables
+    
+    new_M = copy(M)
+    new_M[i,j] = 0
+    new_cv = copy(cases_vides)
+    pb = false 
+
+    if i+1 <= n && new_M[i+1,j]==2    #la case noire est isolée
+        new_M[i+1,j] = 1
+        new_cv = new_cv- 1
+    end
+    if j+1 <= n && new_M[i,j+1]==2
+        new_M[i,j+1] = 1
+        new_cv = new_cv- 1
+    end
+    if i-1 >= 1 && new_M[i-1,j]==2
+        new_M[i-1,j] = 1
+        new_cv = new_cv- 1
+    end
+    if j-1 >= 1 && new_M[i,j-1]==2
+        new_M[i,j-1] = 1
+        new_cv = new_cv- 1
+    end
+
+    while new_cv >0 #pas le bon critère, rajouter un critere de si on modif rien on stop
+        for p in 1:n
+            for t in 1:n
+                white = true 
+                for k in 1:n 
+                    if k != t && G[p,t] == G[p,k] #probleme : les valeurs de G ne changent pas, il faudrait les mettre à zero quand M ij passe à 0
+                        if new_M[p,t] 
+                        white = false
+                    end 
+                    if k != p && G[p,t]==G[k,t]
+                        white = false
+                    end 
+                end
+                if white 
+                    new_M[p,t] = 1
+                    new_cv = new_cv- 1
+                end 
+            end
+        end
+
+        #parcourir la grille
+        #si une case contient un chiffre qui est déjà dans la ligne/colonne
+        #avec une valeur 1 dans M 
+        #alors cette case est noire 
+        #tester les contraintes (tester si il y a une noire a cote)
+        if pb
+            return pb, [], 1 # la matrice et le nb sont inutiles
+        else
+            #on la noircit 
+        end
+
+        
+    end
+
+
+
+end
+
+
+
 function heuristicSolve()
 
-    # TODO
-    println("In file resolution.jl, in method heuristicSolve(), TODO: fix input and output, define the model")
-    
-end 
+    #si on a deja G et n 
+
+    M = Matrix{Int64}(ones(n,n))
+    M = 2.*M
+    cases_vides = n*n
+
+    while cases_vides >0
+        for i in 1:n
+            for j in 1:n
+                white = true
+                for k in 1:n 
+                    if k != j && G[i,j] == G[i,k]
+                        white = false
+                    end 
+                    if k != i && G[i,j] == G[k,j]
+                        white = false
+                    end 
+                end
+                if white 
+                    M[i,j] = 1
+                    cases_vides = cases_vides -1
+                end 
+            end
+        end
+
+        black = false 
+        i=1
+        j=1
+        while not black && i <= n-1
+            while not black && j <= n-1
+                if G[i,j] == G[i,j+1]
+                    black = true 
+                    cases_vides=cases_vides-1
+                    pb, new_M, new_cv = noircir(i,j,M)
+                    if pb 
+                        bool, M , cases_vides= noircir(i,j+1,M)
+                    else
+                        M = new_M
+                        cases_vides = new_cv
+                    end
+                elseif G[i,j] == G[i+1,j]
+                    black = true 
+                    cases_vides=cases_vides-1
+                    M[i,j] = 0
+                    pb, new_M, new_cv = noircir(i,j,M)
+                    if pb 
+                        M[i,j] = 1
+                        M[i+1,j] = 0
+                        bool, M, cases_vides= noircir(i+1,j,M)
+                    else
+                        M = new_M
+                        cases_vides = new_cv
+                    end
+
+                end 
+                j = j+2
+            end
+            j = 1
+            i = i+2
+        end
+    end
 
 """
 Solve all the instances contained in "../data" through CPLEX and heuristics
