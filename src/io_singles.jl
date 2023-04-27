@@ -11,7 +11,7 @@ function readInputFile(inputFile::String)
 
     data = readlines(datafile)
     close(datafile)
-    n = length(data[1])
+    n = size(data)[1]
     Game = Matrix{Int64}(undef,n,n)
     # For each line of the input file
     row = 1
@@ -20,7 +20,7 @@ function readInputFile(inputFile::String)
         SplitLine = split(line, ",")
 
         for col in 1:n 
-            Game[row,col] = SplitLine[col]
+            Game[row,col] = parse(Int64,SplitLine[col])
         end
         row+=1
     end
